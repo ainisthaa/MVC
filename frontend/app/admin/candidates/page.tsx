@@ -1,50 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import AppShell from "@/app/components/AppShell";
-
-type Candidate = {
+interface Candidate {
   candidate_id: string;
   first_name: string;
   last_name: string;
   email: string;
-};
+}
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     apiGet<Candidate[]>("/candidates").then(setCandidates).catch(console.error);
   }, []);
 
   return (
-    <AppShell title="ผู้สมัครทั้งหมด">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ชื่อ</TableHead>
-            <TableHead>นามสกุล</TableHead>
-            <TableHead>อีเมล</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {candidates.map(c => (
-            <TableRow key={c.candidate_id}>
-              <TableCell>{c.first_name}</TableCell>
-              <TableCell>{c.last_name}</TableCell>
-              <TableCell>{c.email}</TableCell>
-              <TableCell>
-                <Link href={`/admin/candidates/${c.candidate_id}`} className="underline">ดูรายละเอียด</Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </AppShell>
+    <div className="p-6 space-y-4">
+      <h1 className="text-xl font-semibold">ผู้สมัครทั้งหมด</h1>
+      {candidates.map((c) => (
+        <Card
+          key={c.candidate_id}
+          className="cursor-pointer"
+          onClick={() => router.push(`/admin/candidates/${c.candidate_id}`)}
+        >
+          <CardHeader>
+            <CardTitle>{c.first_name} {c.last_name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{c.email}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

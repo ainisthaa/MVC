@@ -45,13 +45,13 @@ func main() {
 	// server.Use(cors.Default()) // อนุญาตทุก origin (*)
 	// server.Use()
 	fmt.Print("Hello")
+
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"http://172.20.10.2:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		AllowCredentials: true,
 	}))
-
 	//routers
 
 	server.POST("/login", controllers.Login(dbInstant))

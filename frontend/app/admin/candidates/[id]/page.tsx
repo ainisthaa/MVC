@@ -3,66 +3,61 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiGet } from "@/lib/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-import { Card } from "@/components/ui/card";
-import { Table, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import AppShell from "@/app/components/AppShell";
+interface Candidate {
+  candidate_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
 
-type Application = {
+interface Application {
   job_id: string;
   candidate_id: string;
   applied_at: string;
-};
-
-type CandidateDetail = {
-  candidate: {
-    candidate_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
-  applications: Application[];
-};
+}
 
 export default function CandidateDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const [detail, setDetail] = useState<CandidateDetail | null>(null);
-  const [error, setError] = useState("");
+  const params = useParams();
+  const [candidate, setCandidate] = useState<Candidate | null>(null);
+  const [applications, setApplications] = useState<Application[]>([]);
 
   useEffect(() => {
-    apiGet<CandidateDetail>(`/candidates/${id}`)
-      .then(setDetail)
-      .catch(() => setError("ไม่พบข้อมูลผู้สมัคร"));
-  }, [id]);
+    if (params?.id) {
+      apiGet<{ candidate: Candidate; applications: Application[] }>(`/candidates/${params.id}`)
+        .then((res) => {
+          setCandidate(res.candidate);
+          setApplications(res.applications);
+        })
+        .catch(console.error);
+    }
+  }, [params]);
 
-  if (!detail) return <div className="p-4">{error || "กำลังโหลด..."}</div>;
+  if (!candidate) return <p className="p-6">กำลังโหลด...</p>;
 
   return (
-    <AppShell title="รายละเอียดผู้สมัคร">
-      <Card className="space-y-2">
-        <h2 className="text-lg font-semibold">
-          {detail.candidate.first_name} {detail.candidate.last_name}
-        </h2>
-        <p>อีเมล: {detail.candidate.email}</p>
+    <div className="p-6 space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{candidate.first_name} {candidate.last_name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Email: {candidate.email}</p>
+        </CardContent>
       </Card>
-
-      <h3 className="mt-6 mb-2 text-lg font-semibold">ตำแหน่งที่สมัคร</h3>
-      <Table>
-        <TableHead>
-          <tr>
-            <th className="px-3 py-2 text-left">รหัสงาน</th>
-            <th className="px-3 py-2 text-left">วันที่สมัคร</th>
-          </tr>
-        </TableHead>
-        <tbody>
-          {detail.applications.map(app => (
-            <TableRow key={app.job_id}>
-              <TableCell>{app.job_id}</TableCell>
-              <TableCell>{new Date(app.applied_at).toLocaleDateString("th-TH")}</TableCell>
-            </TableRow>
+      <Card>
+        <CardHeader>
+          <CardTitle>ประวัติการสมัครงาน</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {applications.map((a) => (
+            <p key={a.job_id}>
+              {a.job_id} - {new Date(a.applied_at).toLocaleDateString()}
+            </p>
           ))}
-        </tbody>
-      </Table>
-    </AppShell>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -21,22 +21,22 @@ export default function LoginPage() {
       saveSession({ role: res.role as any, user: res.user });
       if (res.role === "admin") router.push("/admin/candidates");
       else router.push("/jobs");
-    } catch (e: any) {
+    } catch {
       setError("เข้าสู่ระบบไม่สำเร็จ");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-md space-y-4">
+      <Card className="w-full max-w-md space-y-4 p-6">
         <h2 className="text-xl font-semibold">เข้าสู่ระบบ</h2>
         <div>
           <Label htmlFor="email">อีเมล</Label>
-          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
           <Label htmlFor="password">รหัสผ่าน</Label>
-          <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button className="w-full" onClick={handleLogin}>เข้าสู่ระบบ</Button>

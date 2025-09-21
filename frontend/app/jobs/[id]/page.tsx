@@ -1,54 +1,57 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { apiGet } from "@/lib/api";
+import { useParams, useRouter } from "next/navigation";
+import { apiGet, apiPost } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import AppShell from "@/app/components/AppShell";
-
-type Job = {
+interface Job {
   job_id: string;
   title: string;
   description: string;
   deadline: string;
   status: string;
-};
+}
 
-export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([]);
+export default function JobDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [job, setJob] = useState<Job | null>(null);
 
   useEffect(() => {
-    apiGet<Job[]>("/jobs").then(setJobs).catch(console.error);
-  }, []);
+    if (params?.id) {
+      apiGet<Job>(`/jobs/${params.id}`).then(setJob).catch(console.error);
+    }
+  }, [params]);
+
+  const handleApply = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("session") || "{}").user;
+      await apiPost("/apply", { job_id: job?.job_id, candidate_id: user?.user_id });
+      alert("สมัครงานเรียบร้อยแล้ว");
+      router.push("/jobs");
+    } catch {
+      alert("ไม่สามารถสมัครงานได้");
+    }
+  };
+
+  if (!job) return <p className="p-6">กำลังโหลด...</p>;
 
   return (
-    <AppShell title="ตำแหน่งงานที่เปิด">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ตำแหน่ง</TableHead>
-            <TableHead>รายละเอียด</TableHead>
-            <TableHead>วันปิดรับ</TableHead>
-            <TableHead>สถานะ</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {jobs.map(job => (
-            <TableRow key={job.job_id}>
-              <TableCell>{job.title}</TableCell>
-              <TableCell>{job.description}</TableCell>
-              <TableCell>{new Date(job.deadline).toLocaleDateString("th-TH")}</TableCell>
-              <TableCell><Badge>{job.status}</Badge></TableCell>
-              <TableCell>
-                <Link href={`/jobs/${job.job_id}`} className="underline">รายละเอียด</Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </AppShell>
+    <div className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{job.title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{job.description}</p>
+          <p className="text-sm text-gray-500">
+            วันปิดรับ: {new Date(job.deadline).toLocaleDateString()}
+          </p>
+          <Button className="mt-4" onClick={handleApply}>สมัครงาน</Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

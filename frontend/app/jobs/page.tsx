@@ -1,56 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-import { Table, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import AppShell from "../components/AppShell";
-
-type Job = {
+interface Job {
   job_id: string;
   title: string;
   description: string;
   deadline: string;
   status: string;
-};
+}
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     apiGet<Job[]>("/jobs").then(setJobs).catch(console.error);
   }, []);
 
   return (
-    <AppShell title="ตำแหน่งงานที่เปิด">
-      <Table>
-        <TableHead>
-          <tr>
-            <th className="px-3 py-2 text-left">ตำแหน่ง</th>
-            <th className="px-3 py-2 text-left">รายละเอียด</th>
-            <th className="px-3 py-2">วันปิดรับ</th>
-            <th className="px-3 py-2">สถานะ</th>
-            <th></th>
-          </tr>
-        </TableHead>
-        <tbody>
-          {jobs.map(job => (
-            <TableRow key={job.job_id}>
-              <TableCell>{job.title}</TableCell>
-              <TableCell>{job.description}</TableCell>
-              <TableCell>{new Date(job.deadline).toLocaleDateString("th-TH")}</TableCell>
-              <TableCell>
-                <Badge>{job.status}</Badge>
-              </TableCell>
-              <TableCell>
-                <Link href={`/jobs/${job.job_id}`} className="underline">รายละเอียด</Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
-    </AppShell>
+    <div className="p-6 space-y-4">
+      <h1 className="text-xl font-semibold">ตำแหน่งงานที่เปิดรับ</h1>
+      
+      {jobs.map((job,i) => (
+
+        <Card
+          key={i}
+          className="border border-gray-300 cursor-pointer"
+          onClick={() => router.push(`/jobs/${job.JobID}`)}
+        >
+          <CardHeader>
+            <CardTitle>{job.Title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{job.Description}</p>
+            <p className="text-sm text-gray-500">
+              วันปิดรับ: {new Date(job.Deadline).toLocaleDateString()}
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

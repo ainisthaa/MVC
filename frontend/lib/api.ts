@@ -1,33 +1,28 @@
-export const API_BASE = "http://localhost:8890";
+import axios from "axios";
+
+const API_BASE =  "http://localhost:8890";
+
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
 
 export async function apiGet<T>(path: string): Promise<T> {
-  try {
-    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-    if (!res.ok) {
-      console.error("API error:", res.status, await res.text());
-      throw new Error(`API error ${res.status}`);
-    }
-    return res.json();
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    throw err;
-  }
+  const res = await api.get<T>(path);
+  return res.data;
 }
 
-export async function apiPost<T>(path: string, body: any): Promise<T> {
-  try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      console.error("API error:", res.status, await res.text());
-      throw new Error(`API error ${res.status}`);
-    }
-    return res.json();
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    throw err;
-  }
+export async function apiPost<T>(path: string, data: any): Promise<T> {
+  const res = await api.post<T>(path, data);
+  return res.data;
+}
+
+export async function apiPut<T>(path: string, data: any): Promise<T> {
+  const res = await api.put<T>(path, data);
+  return res.data;
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  const res = await api.delete<T>(path);
+  return res.data;
 }
