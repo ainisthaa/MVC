@@ -11,7 +11,9 @@ import (
 func GetOpenJobs(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var jobs []model.Job
-		if err := db.Where("status = ?", "open").Find(&jobs).Error; err != nil {
+		if err := db.Where("status = ?", "open").
+			Order("title ASC, company_id ASC, deadline ASC").
+			Find(&jobs).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}

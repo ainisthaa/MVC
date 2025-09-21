@@ -30,7 +30,13 @@ func GetCandidateDetail(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var applications []model.Application
-		db.Where("candidate_id = ?", id).Find(&applications)
+		// preload job + company
+		if err := db.Preload("Job").Preload("Job.Company").
+			Where("candidate_id = ?", id).
+			Find(&applications).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"candidate":    candidate,
