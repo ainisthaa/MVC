@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiGet } from "@/lib/api";
-import { AppShell } from "@/components/AppShell";
+
 import { Card } from "@/components/ui/card";
 import { Table, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import AppShell from "@/app/components/AppShell";
 
 type Application = {
   job_id: string;

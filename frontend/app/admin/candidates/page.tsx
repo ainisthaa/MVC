@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
 
-import { Table, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import AppShell from "@/app/components/AppShell";
 
 type Candidate = {
@@ -24,15 +24,15 @@ export default function CandidatesPage() {
   return (
     <AppShell title="ผู้สมัครทั้งหมด">
       <Table>
-        <TableHead>
-          <tr>
-            <th className="px-3 py-2 text-left">ชื่อ</th>
-            <th className="px-3 py-2 text-left">นามสกุล</th>
-            <th className="px-3 py-2 text-left">อีเมล</th>
-            <th></th>
-          </tr>
-        </TableHead>
-        <tbody>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ชื่อ</TableHead>
+            <TableHead>นามสกุล</TableHead>
+            <TableHead>อีเมล</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {candidates.map(c => (
             <TableRow key={c.candidate_id}>
               <TableCell>{c.first_name}</TableCell>
@@ -43,7 +43,7 @@ export default function CandidatesPage() {
               </TableCell>
             </TableRow>
           ))}
-        </tbody>
+        </TableBody>
       </Table>
     </AppShell>
   );

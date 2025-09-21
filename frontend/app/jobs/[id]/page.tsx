@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { apiGet, apiPost } from "@/lib/api";
-import { loadSession } from "@/lib/auth";
-import { AppShell } from "@/components/AppShell";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import { apiGet } from "@/lib/api";
+
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import AppShell from "@/app/components/AppShell";
 
 type Job = {
   job_id: string;
@@ -17,45 +16,39 @@ type Job = {
   status: string;
 };
 
-export default function JobDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const [job, setJob] = useState<Job | null>(null);
-  const [error, setError] = useState("");
-  const router = useRouter();
+export default function JobsPage() {
+  const [jobs, setJobs] = useState<Job[]>([]);
 
   useEffect(() => {
-    apiGet<Job>(`/jobs/${id}`).then(setJob).catch(() => setError("ไม่พบงานนี้"));
-  }, [id]);
-
-  const handleApply = async () => {
-    const s = loadSession();
-    if (!s.user) {
-      setError("กรุณาเข้าสู่ระบบก่อน");
-      return;
-    }
-    try {
-      await apiPost("/apply", { job_id: id, candidate_id: s.user.user_id });
-      alert("สมัครงานสำเร็จ!");
-      router.push("/jobs");
-    } catch (e: any) {
-      setError("ไม่สามารถสมัครงานได้");
-    }
-  };
-
-  if (!job) return <div className="p-4">{error || "กำลังโหลด..."}</div>;
+    apiGet<Job[]>("/jobs").then(setJobs).catch(console.error);
+  }, []);
 
   return (
-    <AppShell title={`ตำแหน่ง: ${job.title}`}>
-      <Card className="space-y-3">
-        <h2 className="text-xl font-semibold">{job.title}</h2>
-        <p>{job.description}</p>
-        <p>วันปิดรับ: {new Date(job.deadline).toLocaleDateString("th-TH")}</p>
-        <Badge>{job.status}</Badge>
-        {job.status === "open" && (
-          <Button onClick={handleApply}>สมัครงาน</Button>
-        )}
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-      </Card>
+    <AppShell title="ตำแหน่งงานที่เปิด">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ตำแหน่ง</TableHead>
+            <TableHead>รายละเอียด</TableHead>
+            <TableHead>วันปิดรับ</TableHead>
+            <TableHead>สถานะ</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {jobs.map(job => (
+            <TableRow key={job.job_id}>
+              <TableCell>{job.title}</TableCell>
+              <TableCell>{job.description}</TableCell>
+              <TableCell>{new Date(job.deadline).toLocaleDateString("th-TH")}</TableCell>
+              <TableCell><Badge>{job.status}</Badge></TableCell>
+              <TableCell>
+                <Link href={`/jobs/${job.job_id}`} className="underline">รายละเอียด</Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </AppShell>
   );
 }
